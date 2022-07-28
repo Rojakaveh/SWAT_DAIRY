@@ -261,7 +261,7 @@ cfilename_hruout=readLines(paste0(pathtofile,"/output.hru"))
 textreplace=gsub(pattern = "WTAB CLIm WTAB SOLm", replace="WTABclimwtabsolm",x=cfilename_hruout)
 writeLines(textreplace, con=cfilename_hruoutA)
 outdata_hru_MULTIBARNHRU=readSWAT("hru",".") 
-#----------------------------------plot the stored manure in your farms farms-------------------------------
+#----------------------------------plot the Total N +Total P in your farms farms-------------------------------
 p1 <- ggplot(Farm_dfB01, aes(x=Date, y=TotalNP_barn)) +
   geom_line(color="red", size=2) +
   ggtitle("Farm1")
@@ -271,5 +271,23 @@ p2 <- ggplot(Farm_dfB02, aes(x=Date, y=TotalNP_barn)) +
 
 
 p1 + p2 + plot_layout(ncol = 1, widths = c(1, 1))
+#----------------------------------plot the Stored manure in your farms farms-------------------------------
+p1 <- ggplot(Farm_dfB01, aes(x=Date, y=stored_manure)) +
+  geom_line(color="red", size=2) +
+  ggtitle("Farm1")
+p2 <- ggplot(Farm_dfB02, aes(x=Date, y=stored_manure)) +
+  geom_line(color="black",size=2) +
+  ggtitle("Farm2") 
 
 
+p1 + p2 + plot_layout(ncol = 1, widths = c(1, 1))
+#----------------------------------plot the dry matter manure in your farms farms-------------------------------
+p1 <- ggplot(Farm_dfB01, aes(x=Date, y=DMmanure)) +
+  geom_line(color="red", size=2) +
+  ggtitle("Farm1")
+p2 <- ggplot(Farm_dfB02, aes(x=Date, y=DMmanure)) +
+  geom_line(color="black",size=2) +
+  ggtitle("Farm2") 
+
+
+p1 + p2 + plot_layout(ncol = 1, widths = c(1, 1))
