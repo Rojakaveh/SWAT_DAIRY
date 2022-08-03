@@ -182,6 +182,8 @@ Dairy_df=function(kMortality_calf,kMortality_yearling,kMortality_bredHeifer,kMor
       }
     } 
   }
+  
+  Animal_df=Animal_df[c((365*SWATnsky):nrow(Animal_df)),]
   ##########################################################################
   ##calculation of    CETI | Current month’s effective temperature index, C  (fox et al 2004)
   #####################################################################
@@ -326,8 +328,8 @@ Dairy_df=function(kMortality_calf,kMortality_yearling,kMortality_bredHeifer,kMor
   # Phosphorus Equations per cow,gr 
   ######################################################
   ###----------------------------------------1) P excretion from calf---------------------------
-  calfPexc=function(DMI){
-    Pexc = ((((fed_calf_P/100)*(DMI*1000))/(DMI*1000)*DMI)*622.03) # fed_calf_P and DMI 
+  calfPexc=function(DMI, fed_P){
+    Pexc = ((((fed_P/100)*(DMI*1000))/(DMI*1000)*DMI)*622.03) # fed_calf_P and DMI 
     return(Pexc)
   }
   
@@ -347,7 +349,7 @@ Dairy_df=function(kMortality_calf,kMortality_yearling,kMortality_bredHeifer,kMor
   Animal_df$Fert_applied=0
   for (i in mgt_datafram$HRU_number[mgt_datafram$Barn_number==j]){
     #i=10114
-    Animal_df$Fert_applied[Animal_df$Date==mgt_datafram$Date_app[mgt_datafram$HRU_number==i]]=mgt_datafram$FERT_APPLIED[mgt_datafram$HRU_number==i]
+    Animal_df$Fert_applied[Animal_df$Date==mgt_datafram$Date_app[mgt_datafram$HRU_number==i]]=Animal_df$Fert_applied[Animal_df$Date==mgt_datafram$Date_app[mgt_datafram$HRU_number==i]]+mgt_datafram$FERT_APPLIED[mgt_datafram$HRU_number==i]
   }
   ##########################################################################
   ##################################################
@@ -370,8 +372,8 @@ Dairy_df=function(kMortality_calf,kMortality_yearling,kMortality_bredHeifer,kMor
   N_bredLC=lactNexc(bredLactatCow_DMI) #kg N by bred lactating cows
   N_dry = dryNexc(dry_DMI)/1000 #  kg N by dry cow
   #-----------------------2)P, kg -----------------------------------------------
-  P_calf = calfPexc(calf_DMI)/1000 #kg P by calf
-  P_yearling= cowPexc(yearling_DMI,fed_heifer_P)/1000 #kg P by yearling
+  P_calf = calfPexc(calf_DMI,fed_calf_P)/1000 #kg P by calf
+  P_yearling= calfPexc(yearling_DMI,fed_heifer_P)/1000 #kg P by yearling
   P_bredheifer= cowPexc(bredHeifer_DMI,fed_heifer_P)/1000 #kg P by bred heifer
   P_heifer_first_lact= cowPexc(heifer_first_lact_DMI, fed_lact_P)/1000 #kg P by HFL
   P_bred1stlact=cowPexc(bredlactatingHeifer_DMI,fed_lact_P )/1000 #kg P by bred 1st lactating cows
@@ -461,7 +463,7 @@ Dairy_df=function(kMortality_calf,kMortality_yearling,kMortality_bredHeifer,kMor
   Animal_df$stored_manure[1]=Animal_df$TotalNP_barn[1]/0.007 # semisolid as fertilizer applied for maximum capacity
   ####################################
   for(k in 1:nrow(Animal_df)){
-    if (k+1 <= nrow(Date)){
+    if (k+1 <= nrow(Animal_df)){
       if (Animal_df$Fert_applied[k] > Animal_df$stored_manure[k]){
         Animal_df$Fert_applied[k] = Animal_df$stored_manure[k]
         message(paste0("for HRU that have fert app on",Animal_df$Date[k], "the amount of fertilization is more than stored manure, applied fert in kg is set to", Animal_df$stored_manure[k]))
@@ -474,19 +476,19 @@ Dairy_df=function(kMortality_calf,kMortality_yearling,kMortality_bredHeifer,kMor
         for (i in unique(mgt_datafram$HRU_number[mgt_datafram$Barn_number==j])){
           #print(k)
           nam2=paste0("new_auto_fert",i,k)
-         assign(paste0("new_auto_fert",i,k), assign(nam2,data.frame(Barn_number=mgt_datafram$Barn_number[mgt_datafram$HRU_number==i][1],
-                                 HRU_number=as.numeric(i),
-                                 year_app=year(Animal_df$Date[k]),
-                                 month_app=month(Animal_df$Date[k]),
-                                 day_app=day(Animal_df$Date[k]),
-                                 MGT_OP=as.numeric(3),
-                                 FRT_KG=(Max_capacity/FARMarea),
-                                 Area_ha=mgt_datafram$Area_ha[mgt_datafram$HRU_number==i][1],
-                                 Date_app=Animal_df$Date[k],
-                                 FERT_NAME=paste0(mgt_datafram$Barn_number[mgt_datafram$HRU_number==i][1],year(Animal_df$Date[k]) %% 100,yday(Animal_df$Date[k])),
-                                 FRT_SURFACE=format(round(0.00, 2), nsmall = 2),
-                                 FERT_ID=nrow(mgt_datafram)+mgt_datafram$FERT_ID[1],
-                                 FERT_APPLIED=(Max_capacity/FARMarea)*mgt_datafram$Area_ha[mgt_datafram$HRU_number==i][1])),envir=parent.frame()) 
+          assign(paste0("new_auto_fert",i,k), assign(nam2,data.frame(Barn_number=mgt_datafram$Barn_number[mgt_datafram$HRU_number==i][1],
+                                                                     HRU_number=as.numeric(i),
+                                                                     year_app=year(Animal_df$Date[k]),
+                                                                     month_app=month(Animal_df$Date[k]),
+                                                                     day_app=day(Animal_df$Date[k]),
+                                                                     MGT_OP=as.numeric(3),
+                                                                     FRT_KG=(Max_capacity/FARMarea),
+                                                                     Area_ha=mgt_datafram$Area_ha[mgt_datafram$HRU_number==i][1],
+                                                                     Date_app=Animal_df$Date[k],
+                                                                     FERT_NAME=paste0(mgt_datafram$Barn_number[mgt_datafram$HRU_number==i][1],year(Animal_df$Date[k]) %% 100,yday(Animal_df$Date[k])),
+                                                                     FRT_SURFACE=format(round(0.00, 2), nsmall = 2),
+                                                                     FERT_ID=nrow(mgt_datafram)+mgt_datafram$FERT_ID[1],
+                                                                     FERT_APPLIED=(Max_capacity/FARMarea)*mgt_datafram$Area_ha[mgt_datafram$HRU_number==i][1])),envir=parent.frame()) 
           mgt_datafram=rbind(mgt_datafram,get(paste0("new_auto_fert",i,k)))
           rm(list=ls(pattern ="new_auto_fert*" ),envir=parent.frame())
         }
@@ -521,18 +523,19 @@ Dairy_df=function(kMortality_calf,kMortality_yearling,kMortality_bredHeifer,kMor
   Animal_df$Norg_frac=0 ## fraction of organic N in fertilizer (dairy manure) (kg org-N/kg fertilizer)
   Animal_df$Nmin_frac=0 ## fraction mineral N in fertilizer (dairy manure) (kg min_N/kg fertilizer)
   for (k in 1:nrow(Animal_df)){
-  if (Animal_df$DMmanure[k] == 0){
-    Animal_df$Pmin_frac[k] = 0.
-    Animal_df$Porg_frac[k] = 0.
-    Animal_df$Norg_frac[k] = 0.
-    Animal_df$Nmin_frac [k]= 0.	           
-  }else {  
-    Animal_df$Pmin_frac[k] = Animal_df$Pmin_stored[k]/Animal_df$DMmanure[k]
-    Animal_df$Porg_frac[k] = Animal_df$Porg_stored[k]/Animal_df$DMmanure[k]
-    Animal_df$Norg_frac[k] = Animal_df$Norg_stored[k]/Animal_df$DMmanure[k]
-    Animal_df$Nmin_frac[k] = Animal_df$Nmin_stored[k]/Animal_df$DMmanure[k]
-  }
+    if (Animal_df$DMmanure[k] == 0){
+      Animal_df$Pmin_frac[k] = 0.
+      Animal_df$Porg_frac[k] = 0.
+      Animal_df$Norg_frac[k] = 0.
+      Animal_df$Nmin_frac [k]= 0.	           
+    }else {  
+      Animal_df$Pmin_frac[k] = Animal_df$Pmin_stored[k]/Animal_df$DMmanure[k]
+      Animal_df$Porg_frac[k] = Animal_df$Porg_stored[k]/Animal_df$DMmanure[k]
+      Animal_df$Norg_frac[k] = Animal_df$Norg_stored[k]/Animal_df$DMmanure[k]
+      Animal_df$Nmin_frac[k] = Animal_df$Nmin_stored[k]/Animal_df$DMmanure[k]
+    }
   }
   assign("mgt_datafram",mgt_datafram,envir=parent.frame())
   return(Animal_df)
 }
+
