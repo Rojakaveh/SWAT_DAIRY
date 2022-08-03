@@ -32,16 +32,17 @@
 #----------7. Rerun SWAT model with updated input files
 #############################################################################################################
 Sys.unsetenv("http_proxy"); Sys.unsetenv("https_proxy")
-setwd("~/SWATFARM/Scenario2/") 
+setwd("~/FarmScenarios/TxtInOut/") 
 #-------------------------------------Setp 1 --------------------------------------------------------
 # 1.1. getting Date from file.cio of SWAT initialization
-setwd("~/SWATFARM/Scenario2/TxtInOutLOC/") # Note= set your directory to the directory of SWAT TxtInOut
+#setwd("~/SWATFARM/Scenario2/TxtInOutLOC/") # Note= set your directory to the directory of SWAT TxtInOut
 pathtofile="."
 cfilename=paste0(pathtofile,"/file.cio")
 SWATnbyr = read.fortran(textConnection(readLines(cfilename)[8]), "f20")[1,]
 SWATiyr = read.fortran(textConnection(readLines(cfilename)[9]), "f20")[1,]
 SWATidaf = read.fortran(textConnection(readLines(cfilename)[10]), "f20")[1,]
 SWATidal = read.fortran(textConnection(readLines(cfilename)[11]), "f20")[1,]
+SWATnsky=read.fortran(textConnection(readLines(cfilename)[60]), "f20")[1,]
 startdate=as_date(paste0(SWATiyr,"-01-01")) + SWATidaf -1
 enddate=as_date(paste0(SWATiyr+SWATnbyr -1,"-01-01")) + SWATidal -1
 AllDays=data.frame(date=seq(startdate, by = "day", length.out = enddate-startdate+1))
@@ -187,23 +188,23 @@ for (j in unique(mgt_datafram$Barn_number)){
   nam=paste0("Farm_df",j)
   FARMarea=sum(mgt_datafram$Area_ha[mgt_datafram$Barn_number==j]) #ha area of all hru in the farm j
   assign(nam, Dairy_df(Dairy_farm_datafram$kMortality_calf[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$kMortality_yearling[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$kMortality_bredHeifer[Dairy_farm_datafram$Barn_number==j],
-                   Dairy_farm_datafram$kMortality_LH[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$kMortality_BLH[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$kMortality_DBH[Dairy_farm_datafram$Barn_number==j],
-                   Dairy_farm_datafram$kMortality_SecondLC[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$kMortality_BredSecLC[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$kMortality_DSecondLC[Dairy_farm_datafram$Barn_number==j],
-                   Dairy_farm_datafram$kMortality_ThirdLC[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$kMortality_BredThirdLC[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$kMortality_DThirdLC[Dairy_farm_datafram$Barn_number==j],
-                   Dairy_farm_datafram$kMortality_LC[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$kMotality_BredLC[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$kMortality_DC[Dairy_farm_datafram$Barn_number==j],
-                   Dairy_farm_datafram$HFCR[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$HSCR[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$C2CR[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$C3CR[Dairy_farm_datafram$Barn_number==j],
-                   Dairy_farm_datafram$C4CR[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$PropF[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$PropKeep[Dairy_farm_datafram$Barn_number==j],
-                   Dairy_farm_datafram$iCalf[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$iHeifer_first_lact[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$iHeifer_second_lact[Dairy_farm_datafram$Barn_number==j],
-                   Dairy_farm_datafram$iHeifer_third_lact[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$iHeifer_first_dry[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$iHeifer_second_dry[Dairy_farm_datafram$Barn_number==j],
-                   Dairy_farm_datafram$iHeifer_third_dry[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$iLact[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$iDry[Dairy_farm_datafram$Barn_number==j],
-                   Dairy_farm_datafram$iyearling[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$ibredHeifer[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$iBLH[Dairy_farm_datafram$Barn_number==j],
-                   Dairy_farm_datafram$iBredSecLC[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$iBredThirdLC[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$iBredLC[Dairy_farm_datafram$Barn_number==j],
-                   Dairy_farm_datafram$Barn_capacity[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$Max_capacity[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$Breed[Dairy_farm_datafram$Barn_number==j],
-                   Dairy_farm_datafram$FCM[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$calf_ME[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$calf_CP[Dairy_farm_datafram$Barn_number==j],
-                   Dairy_farm_datafram$fed_calf_P[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$heifer_ME[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$heifer_CP[Dairy_farm_datafram$Barn_number==j],
-                   Dairy_farm_datafram$fed_heifer_P[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$lact_CP[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$fed_lact_P[Dairy_farm_datafram$Barn_number==j],
-                   Dairy_farm_datafram$dry_CP[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$fed_dry_P[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$HRS[Dairy_farm_datafram$Barn_number==j],
-                   Dairy_farm_datafram$Temp[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$RHMD[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$WS[Dairy_farm_datafram$Barn_number==j]))
+                       Dairy_farm_datafram$kMortality_LH[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$kMortality_BLH[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$kMortality_DBH[Dairy_farm_datafram$Barn_number==j],
+                       Dairy_farm_datafram$kMortality_SecondLC[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$kMortality_BredSecLC[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$kMortality_DSecondLC[Dairy_farm_datafram$Barn_number==j],
+                       Dairy_farm_datafram$kMortality_ThirdLC[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$kMortality_BredThirdLC[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$kMortality_DThirdLC[Dairy_farm_datafram$Barn_number==j],
+                       Dairy_farm_datafram$kMortality_LC[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$kMotality_BredLC[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$kMortality_DC[Dairy_farm_datafram$Barn_number==j],
+                       Dairy_farm_datafram$HFCR[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$HSCR[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$C2CR[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$C3CR[Dairy_farm_datafram$Barn_number==j],
+                       Dairy_farm_datafram$C4CR[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$PropF[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$PropKeep[Dairy_farm_datafram$Barn_number==j],
+                       Dairy_farm_datafram$iCalf[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$iHeifer_first_lact[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$iHeifer_second_lact[Dairy_farm_datafram$Barn_number==j],
+                       Dairy_farm_datafram$iHeifer_third_lact[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$iHeifer_first_dry[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$iHeifer_second_dry[Dairy_farm_datafram$Barn_number==j],
+                       Dairy_farm_datafram$iHeifer_third_dry[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$iLact[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$iDry[Dairy_farm_datafram$Barn_number==j],
+                       Dairy_farm_datafram$iyearling[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$ibredHeifer[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$iBLH[Dairy_farm_datafram$Barn_number==j],
+                       Dairy_farm_datafram$iBredSecLC[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$iBredThirdLC[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$iBredLC[Dairy_farm_datafram$Barn_number==j],
+                       Dairy_farm_datafram$Barn_capacity[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$Max_capacity[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$Breed[Dairy_farm_datafram$Barn_number==j],
+                       Dairy_farm_datafram$FCM[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$calf_ME[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$calf_CP[Dairy_farm_datafram$Barn_number==j],
+                       Dairy_farm_datafram$fed_calf_P[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$heifer_ME[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$heifer_CP[Dairy_farm_datafram$Barn_number==j],
+                       Dairy_farm_datafram$fed_heifer_P[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$lact_CP[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$fed_lact_P[Dairy_farm_datafram$Barn_number==j],
+                       Dairy_farm_datafram$dry_CP[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$fed_dry_P[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$HRS[Dairy_farm_datafram$Barn_number==j],
+                       Dairy_farm_datafram$Temp[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$RHMD[Dairy_farm_datafram$Barn_number==j],Dairy_farm_datafram$WS[Dairy_farm_datafram$Barn_number==j]))
 }
 # modify *.mgt files
 pathtofile="."
@@ -226,23 +227,23 @@ for (l in 1:nrow(mgt_datafram)){
   i=mgt_datafram$HRU_number[l]
   Farm_df=get(paste0("Farm_df",mgt_datafram$Barn_number[mgt_datafram$HRU_number==i][1]))
   assign(paste0("FERT_DAT_datafram",i,l,sep=""), data.frame(IFNUM=mgt_datafram$FERT_ID[l],FERTNUM=mgt_datafram$FERT_NAME[l],FMINN=format(round(Farm_df$Nmin_frac[Farm_df$Date==mgt_datafram$Date_app[l]], 3),nsmall=3),
-                                                          FMINP=format(round(Farm_df$Pmin_frac[Farm_df$Date==mgt_datafram$Date_app[l]], 3),nsmall=3),
-                                                          FORGN=format(round(Farm_df$Norg_frac[Farm_df$Date==mgt_datafram$Date_app[l]], 3),nsmall=3),
-                                                          FORGP=format(round(Farm_df$Porg_frac[Farm_df$Date==mgt_datafram$Date_app[l]],3),nsmall=3),
-                                                          FNH3N=format(round(0.990, 3), nsmall = 3),
-                                                          BACTPDB=format(round(0.000, 3), nsmall = 3),
-                                                          BACTLPDB=format(round(0.000, 3), nsmall = 3),
-                                                          BACTKDDB=format(round(0.000, 3), nsmall = 3),
-                                                          X=format(round(0.600, 3), nsmall = 3),
-                                                          Y=2))
+                                                            FMINP=format(round(Farm_df$Pmin_frac[Farm_df$Date==mgt_datafram$Date_app[l]], 3),nsmall=3),
+                                                            FORGN=format(round(Farm_df$Norg_frac[Farm_df$Date==mgt_datafram$Date_app[l]], 3),nsmall=3),
+                                                            FORGP=format(round(Farm_df$Porg_frac[Farm_df$Date==mgt_datafram$Date_app[l]],3),nsmall=3),
+                                                            FNH3N=format(round(0.990, 3), nsmall = 3),
+                                                            BACTPDB=format(round(0.000, 3), nsmall = 3),
+                                                            BACTLPDB=format(round(0.000, 3), nsmall = 3),
+                                                            BACTKDDB=format(round(0.000, 3), nsmall = 3),
+                                                            X=format(round(0.600, 3), nsmall = 3),
+                                                            Y=2))
   
 }
 for (l in 1:nrow(mgt_datafram)){
   i=mgt_datafram$HRU_number[l]
   k=formatC(get(paste0("FERT_DAT_datafram",i,l,sep= ""))$IFNUM, width = 4, format = "d", flag = "")
   assign(paste0("new_fert",i,l,sep=""), paste0(k," ",get(paste0("FERT_DAT_datafram",i,l,sep= ""))$FERTNUM,"   ",get(paste0("FERT_DAT_datafram",i,l,sep= ""))$FMINN,"   ",get(paste0("FERT_DAT_datafram",i,l,sep= ""))$FMINP,
-                                             "   ",get(paste0("FERT_DAT_datafram",i,l,sep= ""))$FORGN,"   ",get(paste0("FERT_DAT_datafram",i,l,sep= ""))$FORGP,"   ",get(paste0("FERT_DAT_datafram",i,l,sep= ""))$FNH3N,"   ",get(paste0("FERT_DAT_datafram",i,l,sep= ""))$BACTPDB,
-                                             "      ",get(paste0("FERT_DAT_datafram",i,l,sep= ""))$BACTLPDB,"      ",get(paste0("FERT_DAT_datafram",i,l,sep= ""))$BACTKDDB,"   ",get(paste0("FERT_DAT_datafram",i,l,sep= ""))$X,"   ",get(paste0("FERT_DAT_datafram",i,l,sep= ""))$Y) )
+                                               "   ",get(paste0("FERT_DAT_datafram",i,l,sep= ""))$FORGN,"   ",get(paste0("FERT_DAT_datafram",i,l,sep= ""))$FORGP,"   ",get(paste0("FERT_DAT_datafram",i,l,sep= ""))$FNH3N,"   ",get(paste0("FERT_DAT_datafram",i,l,sep= ""))$BACTPDB,
+                                               "      ",get(paste0("FERT_DAT_datafram",i,l,sep= ""))$BACTLPDB,"      ",get(paste0("FERT_DAT_datafram",i,l,sep= ""))$BACTKDDB,"   ",get(paste0("FERT_DAT_datafram",i,l,sep= ""))$X,"   ",get(paste0("FERT_DAT_datafram",i,l,sep= ""))$Y) )
   write(get(paste0("new_fert",i,l,sep= "")),file=list.files(pattern = "fert.dat"), sep = "\n",append = TRUE)
 }
 # CHECK IF THE NEW LINES ADDED CORRECTLY to fert.dat
