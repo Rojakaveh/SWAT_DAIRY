@@ -554,3 +554,4 @@ Dairy_df=function(kMortality_calf,kMortality_yearling,kMortality_bredHeifer,kMor
   #assign("mgt_datafram",mgt_datafram,envir=parent.frame())
   return(Animal_df)
 }
+
