@@ -219,6 +219,7 @@ for (i in unique(mgt_datafram$HRU_number)){
 }
 #-----------------------------Step 6 --------------------------------------------------  
 for (l in 1:nrow(mgt_datafram)){
+  #l=1
   i=mgt_datafram$HRU_number[l]
   Farm_df=get(paste0("Farm_df",mgt_datafram$Barn_number[mgt_datafram$HRU_number==i][1]))
   assign(paste0("FERT_DAT_datafram",i,l,sep=""), data.frame(IFNUM=mgt_datafram$FERT_ID[l],FERTNUM=mgt_datafram$FERT_NAME[l],FMINN=format(round(Farm_df$Nmin_frac[Farm_df$Date==mgt_datafram$Date_app[l]], 3),nsmall=3),
@@ -250,13 +251,38 @@ runSWAT2012()
 source("https://r-forge.r-project.org/scm/viewvc.php/*checkout*/pkg/SWATmodel/R/readSWAT.R?root=ecohydrology")
 save(readSWAT,file="readSWAT.R")
 load("readSWAT.R")
-outdata_rch_MULTIBARNHRU = readSWAT("rch",".")
-outdata_sub_MULTIBARNHRU=readSWAT("sub",".")
+outdata_rch_IncreaseTN = readSWAT("rch",".")
+outdata_sub_IncreaseTN=readSWAT("sub",".")
 cfilename_hruoutA=paste0(pathtofile,"/output.hru")
 cfilename_hruout=readLines(paste0(pathtofile,"/output.hru"))
 textreplace=gsub(pattern = "WTAB CLIm WTAB SOLm", replace="WTABclimwtabsolm",x=cfilename_hruout)
 writeLines(textreplace, con=cfilename_hruoutA)
-outdata_hru_MULTIBARNHRU=readSWAT("hru",".") 
+outdata_hru_IncreaseTN=readSWAT("hru",".") 
+
+###########################---------------FARM--------------------------
+
+outdata_hru_IncreaseTN$P_APPkg_per_ha[(outdata_hru_IncreaseTN$mdate=="2019-06-14")&(outdata_hru_IncreaseTN$LULC=="HYAF")]
+outdata_hru_IncreaseTN$N_APPkg_per_ha[(outdata_hru_IncreaseTN$mdate=="2019-06-14")&(outdata_hru_IncreaseTN$LULC=="HYAF")]
+#outdata_hru_IncreaseTN=subset(outdata_hru_IncreaseTN, outdata_hru_IncreaseTN$LULC=="HYAF")
+
+#roja=matrix(NA, ncol = 7, nrow = 365)
+#roja=data.frame(roja)
+#colnames(roja)=c("Date","ORGN","ORGP","MINP","MINN","N_APP","P_APP")
+
+
+
+for (i in 1:365){
+  roja$Date[i]=i
+  roja$ORGN[i]=sum(outdata_hru_IncreaseTN$ORGNkg_per_ha[outdata_hru_IncreaseTN$MON==i])
+  roja$ORGP[i]=sum(outdata_hru_IncreaseTN$ORGPkg_per_ha[outdata_hru_IncreaseTN$MON==i])
+  roja$MINP[i]=sum(outdata_hru_IncreaseTN$SEDPkg_per_ha[outdata_hru_IncreaseTN$MON==i])
+  roja$MINN[i]=sum(outdata_hru_IncreaseTN$NSURQkg_per_ha[outdata_hru_IncreaseTN$MON==i])
+  roja$N_APP[i]=sum(outdata_hru_IncreaseTN$N_APPkg_per_ha[outdata_hru_IncreaseTN$MON==i])
+  roja$P_APP[i]=sum(outdata_hru_IncreaseTN$P_APPkg_per_ha[outdata_hru_IncreaseTN$MON==i])
+}
+outdata_rch_IncreaseTN=subset(outdata_rch_IncreaseTN,outdata_rch_IncreaseTN$RCH==1)
+sum(outdata_rch_IncreaseTN$TOT_Nkg)
+sum(outdata_rch_IncreaseTN$TOT_Pkg)
 #----------------------------------plot the Total N +Total P in your farms farms-------------------------------
 p1 <- ggplot(Farm_dfB01[c(1:365),], aes(x=Date, y=TotalNP_barn)) +
   geom_line(color="red", size=2) +
@@ -321,12 +347,9 @@ p3 <- ggplot(Farm_dfB01) +
 
 p1 + p2 + p3+ plot_layout(ncol = 1, widths = c(1, 1))
 #----------------------------------plot the dry matter manure in your farms farms-------------------------------
-p1 <- ggplot(Farm_dfB01, aes(x=Date, y=DMmanure)) +
+p1 <- ggplot(Farm_dfB01, aes(x=Date, y=TotalNP_barn)) +
   geom_line(color="red", size=2) +
   ggtitle("Farm1")
-p2 <- ggplot(Farm_dfB02, aes(x=Date, y=DMmanure)) +
-  geom_line(color="black",size=2) +
-  ggtitle("Farm2") 
 
 
 plot(Farm_dfB02$Date[730:4380],Farm_dfB01$calves[730:4380],ylim=c(0,175))
@@ -417,3 +440,5 @@ p2=ggbarplot(df3,"Roja", "val",
     plot.title=element_text(margin=margin(t=10,b=-20),size = 20))
 
 p1 + p2 + plot_layout(ncol = 1, widths = c(1, 1))
+
+
