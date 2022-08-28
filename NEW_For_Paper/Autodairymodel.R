@@ -1,4 +1,5 @@
 
+
 kMortality_calf=0.07;kMortality_yearling=0.03;kMortality_bredHeifer=0.03;kMortality_LH=0.04;
 kMortality_BLH=0.04;kMortality_DBH=0.04;kMortality_SecondLC=0.05;kMortality_BredSecLC=0.05;
 kMortality_DSecondLC=0.05;kMortality_ThirdLC=0.06;kMortality_BredThirdLC=0.06;kMortality_DThirdLC=0.06;
@@ -23,7 +24,7 @@ Dairy_df=function(kMortality_calf,kMortality_yearling,kMortality_bredHeifer,kMor
                   heifer_CP,fed_heifer_P,lact_CP,fed_lact_P,dry_CP,fed_dry_P,
                   HRS,Temp,RHMD,WS){
   if (is.na(Max_capacity)==TRUE){
-    Max_capacity=(35*Barn_capacity*365)/3   #35 kg/day-animal, 365 day, each 4 months 
+    Max_capacity=(6.53*Barn_capacity*550)*365/3000   
     assign(paste0("Max_capacity"),Max_capacity,envir=parent.frame())
   }  
   Animal_df= data.frame(matrix(ncol=60, nrow=nrow(Date)))
@@ -246,20 +247,35 @@ Dairy_df=function(kMortality_calf,kMortality_yearling,kMortality_bredHeifer,kMor
   ###############################################################
   #wt updating which is a function of t (time)
   wtLact = dairy_ADG(2500) #wt of lact kg
+  Animal_df$manure_Lact=6.53*wtLact*Animal_df$LC/1000 #soild manure daily by all calves on that date
   wtDry = dairy_ADG(2500)  #wt of dry
+  Animal_df$manure_Dry=6.53*wtDry*Animal_df$DC/1000
   wtCalf = dairy_ADG(365)  #wt of calf
+  Animal_df$manure_Calf=6.53*wtCalf*Animal_df$calves/1000
   wtyearling=dairy_ADG(455) #wt yearling
+  Animal_df$manure_yearling=6.53*wtyearling*Animal_df$yearling/1000
   wtbreadHeifer=dairy_ADG(740) #wt bred heifers
+  Animal_df$manure_breadHeifer=6.53*wtbreadHeifer*Animal_df$bredHeifer/1000
   wtHeifer_first_lact = dairy_ADG(825) #wt of HFL
+  Animal_df$manure_first_lact=6.53*wtHeifer_first_lact*Animal_df$LactatingHeifers/1000
   wtBredLactHeif=dairy_ADG(1045) #wt bred 1st lactating heifers
+  Animal_df$manure_BredLactHeif=6.53*wtBredLactHeif*Animal_df$BLH/1000
   wtHeifer_second_lact = dairy_ADG(1190) #wt of HSL
+  Animal_df$manure_second_lact=6.53*wtHeifer_second_lact*Animal_df$SecondLC/1000
   wtBred2ndLC=dairy_ADG(1410) #wt bred 2nd lactating cows
+  Animal_df$manure_Bred2ndLC=6.53*wtBred2ndLC*Animal_df$BredSecLC/1000
   wtHeifer_third_lact = dairy_ADG(1555) #wt of HTL
+  Animal_df$manure_Heifer_third_lact=6.53*wtHeifer_third_lact*Animal_df$ThirdLC/1000
   wtBred3rdLC=dairy_ADG(1775) # wt bred 3rd lactating cows
+  Animal_df$manure_Bred3rdLC=6.53*wtBred3rdLC*Animal_df$BredThirdLC/1000
   WTHFD = dairy_ADG(1105) #wt of HFD
+  Animal_df$manure_HFD=6.53*WTHFD*Animal_df$DBH/1000
   WTSFD = dairy_ADG(1470) #wt of HSD
+  Animal_df$manure_SFD=6.53*WTSFD*Animal_df$DSecondLC/1000
   WTHTD = dairy_ADG(1835) #wt of HTD
+  Animal_df$manure_HTD=6.53*WTHTD*Animal_df$DThirdLC/1000
   wtbredLC=dairy_ADG(2500) #wt of fourth or greater bred lactating cows
+  Animal_df$manure_bredLC=6.53*wtbredLC*Animal_df$BredLC/1000
   #################################################################################
   ######### DMI dry matter intak function for calf, BW is an argument and dry matter intake (DMI) is an output
   ##############################################################################
@@ -437,6 +453,12 @@ Dairy_df=function(kMortality_calf,kMortality_yearling,kMortality_bredHeifer,kMor
   Animal_df$bredLC_P=P_bredLC*Animal_df$BredLC #kg of P  produced by the number of bred lactating cows 
   Animal_df$dry_P = P_dry*Animal_df$DC # kg of total P produced by the number of dry cows
   ########################################################################
+  # Daily manure produced by animal in the barn
+  #############################################
+  Animal_df$manure_barn=Animal_df$manure_Calf+Animal_df$manure_yearling+Animal_df$manure_first_lact+Animal_df$manure_second_lact+
+    Animal_df$manure_Heifer_third_lact+
+    Animal_df$manure_Lact
+  ########################################################################
   ######daily TOTAL N and total P in Barn AND PASTURE, lactation cows are in the barn and dry cows+calves in the pasture
   #################################################################
   #------------------------Total N in Barn, kg------------------------------------------------------
@@ -467,14 +489,14 @@ Dairy_df=function(kMortality_calf,kMortality_yearling,kMortality_bredHeifer,kMor
   Animal_df$Total_N_barn_stored[1]=Animal_df$total_N_barn[1]
   Animal_df$Total_P_barn_stored[1]=Animal_df$total_P_barn[1]
   Animal_df$TotalNP_barn=0
-  Animal_df$DMmanure=0
+  #Animal_df$DMmanure=0
   Animal_df$stored_manure=0
   Animal_df$TotalNP_barn[1]=Animal_df$totalNP[1]
   ##################################################
   ####getting stored manure from stored total N + total P (Jokela et al., 2010)
   #################################################
-  Animal_df$DMmanure[1]=Animal_df$TotalNP_barn[1]/0.046 # dry matter basis for fraction
-  Animal_df$stored_manure[1]=Animal_df$TotalNP_barn[1]/0.007 # semisolid as fertilizer applied for maximum capacity
+  #Animal_df$DMmanure[1]=Animal_df$TotalNP_barn[1]/0.046 # dry matter basis for fraction
+  Animal_df$stored_manure[1]=Animal_df$manure_barn[1] # semisolid as fertilizer applied for maximum capacity
   ####################################
   for(k in 1:nrow(Animal_df)){
     if (k+1 <= nrow(Animal_df)){
@@ -483,10 +505,13 @@ Dairy_df=function(kMortality_calf,kMortality_yearling,kMortality_bredHeifer,kMor
       #  message(paste0("for HRU that have fert app on",Animal_df$Date[k], "the amount of fertilization is more than stored manure, applied fert in kg is set to", Animal_df$TotalNP_barn[k]))
       #}
       if (Animal_df$stored_manure[k]>= Max_capacity){
-        Animal_df$Fert_applied[k]=Max_capacity
-        Animal_df$TotalNP_barn[k]=Max_capacity*0.007
-        Animal_df$stored_manure[k]=Max_capacity
-        Animal_df$DMmanure[k]=Max_capacity*0.152
+        Animal_df$Fert_applied[k]=Animal_df$TotalNP_barn[k]
+        Animal_df$TotalNP_barn[k]=0
+        Animal_df$Total_N_barn_stored[k]=0
+        Animal_df$Total_P_barn_stored[k] = 0
+        #Animal_df$TotalNP_barn[k]=Max_capacity*0.007
+        Animal_df$stored_manure[k]=0
+        #Animal_df$DMmanure[k]=Max_capacity*0.152
         for (i in unique(mgt_datafram$HRU_number[mgt_datafram$Barn_number==j])){
           #print(k)
           nam2=paste0("new_auto_fert",i,k)
@@ -496,21 +521,22 @@ Dairy_df=function(kMortality_calf,kMortality_yearling,kMortality_bredHeifer,kMor
                                                                      month_app=month(Animal_df$Date[k]),
                                                                      day_app=day(Animal_df$Date[k]),
                                                                      MGT_OP=as.numeric(3),
-                                                                     FRT_KG=(Max_capacity/FARMarea),
+                                                                     FRT_KG=(Animal_df$Fert_applied[k]/FARMarea),
                                                                      Area_ha=mgt_datafram$Area_ha[mgt_datafram$HRU_number==i][1],
                                                                      Date_app=Animal_df$Date[k],
                                                                      FERT_NAME=paste0(mgt_datafram$Barn_number[mgt_datafram$HRU_number==i][1],year(Animal_df$Date[k]) %% 100,sprintf('%0.3d',yday(Animal_df$Date[k]))),
                                                                      FRT_SURFACE=format(round(0.00, 2), nsmall = 2),
                                                                      #FERT_ID=nrow(mgt_datafram),
-                                                                     FERT_APPLIED=(Max_capacity/FARMarea)*mgt_datafram$Area_ha[mgt_datafram$HRU_number==i][1])),envir=parent.frame())
+                                                                     FERT_APPLIED=(Animal_df$Fert_applied[k]/FARMarea)*mgt_datafram$Area_ha[mgt_datafram$HRU_number==i][1])),envir=parent.frame())
         }
-        message(paste0("Auto-fertilization on ",Animal_df$Date[k]," for farm ",j ," the rate of fertilizer application in kg/ha is set to ",(Max_capacity/FARMarea)))                                                                             
+        message(paste0("Auto-fertilization on ",Animal_df$Date[k]," for farm ",j ," the rate of (TotalN+TotalP) application in kg/ha is set to ",(Animal_df$Fert_applied[k]/FARMarea)," the rate of fertilizer application in kg/ha is set to ",(Max_capacity/FARMarea)))                                                                             
       }
-      Animal_df$TotalNP_barn[k+1]=Animal_df$TotalNP_barn[k]+Animal_df$totalNP[k]-(Animal_df$Fert_applied[k]*0.007)
-      Animal_df$DMmanure[k+1]=Animal_df$TotalNP_barn[k+1]/0.046
-      Animal_df$stored_manure[k+1]=Animal_df$TotalNP_barn[k+1]/0.007
-      Animal_df$Total_N_barn_stored[k+1]=Animal_df$Total_N_barn_stored[k] + Animal_df$total_N_barn[k+1]-(Animal_df$Total_N_barn_stored[k]/Animal_df$TotalNP_barn[k])*Animal_df$Fert_applied[k]*0.007
-      Animal_df$Total_P_barn_stored[k+1] = Animal_df$Total_P_barn_stored[k] + Animal_df$total_P_barn[k+1]-(Animal_df$Total_P_barn_stored[k]/Animal_df$TotalNP_barn[k])*Animal_df$Fert_applied[k]*0.007
+      
+      Animal_df$TotalNP_barn[k+1]=Animal_df$TotalNP_barn[k]+Animal_df$totalNP[k+1]
+      #Animal_df$DMmanure[k+1]=Animal_df$TotalNP_barn[k+1]/0.046
+      Animal_df$stored_manure[k+1]=Animal_df$stored_manure[k]+Animal_df$manure_barn[k+1]
+      Animal_df$Total_N_barn_stored[k+1]=Animal_df$Total_N_barn_stored[k] + Animal_df$total_N_barn[k+1]
+      Animal_df$Total_P_barn_stored[k+1] = Animal_df$Total_P_barn_stored[k] + Animal_df$total_P_barn[k+1]
     }
   }
   nam3=paste0("mgt_dataframe_Farm",j)
@@ -538,20 +564,23 @@ Dairy_df=function(kMortality_calf,kMortality_yearling,kMortality_bredHeifer,kMor
   Animal_df$Porg_frac=0 ## fraction of organic P in fertilizer (dairy manure) (kg org-P/kg fertilizer)
   Animal_df$Norg_frac=0 ## fraction of organic N in fertilizer (dairy manure) (kg org-N/kg fertilizer)
   Animal_df$Nmin_frac=0 ## fraction mineral N in fertilizer (dairy manure) (kg min_N/kg fertilizer)
-  for (k in 1:nrow(Animal_df)){
-    if (Animal_df$DMmanure[k] == 0){
-      Animal_df$Pmin_frac[k] = 0.
-      Animal_df$Porg_frac[k] = 0.
-      Animal_df$Norg_frac[k] = 0.
-      Animal_df$Nmin_frac [k]= 0.	           
+  Animal_df$Pmin_frac[1] = Animal_df$Pmin_stored[1]/Animal_df$TotalNP_barn[1]
+  Animal_df$Porg_frac[1] = Animal_df$Porg_stored[1]/Animal_df$TotalNP_barn[1]
+  Animal_df$Norg_frac[1] = Animal_df$Norg_stored[1]/Animal_df$TotalNP_barn[1]
+  Animal_df$Nmin_frac[1] = Animal_df$Nmin_stored[1]/Animal_df$TotalNP_barn[1] 
+  for (k in 2:nrow(Animal_df)){
+    if (Animal_df$TotalNP_barn[k] == 0){
+      Animal_df$Pmin_frac[k] = Animal_df$Pmin_frac[k-1]
+      Animal_df$Porg_frac[k] = Animal_df$Porg_frac[k-1]
+      Animal_df$Norg_frac[k] = Animal_df$Norg_frac[k-1]
+      Animal_df$Nmin_frac [k]= Animal_df$Nmin_frac [k-1]	           
     }else {  
-      Animal_df$Pmin_frac[k] = Animal_df$Pmin_stored[k]/Animal_df$DMmanure[k]
-      Animal_df$Porg_frac[k] = Animal_df$Porg_stored[k]/Animal_df$DMmanure[k]
-      Animal_df$Norg_frac[k] = Animal_df$Norg_stored[k]/Animal_df$DMmanure[k]
-      Animal_df$Nmin_frac[k] = Animal_df$Nmin_stored[k]/Animal_df$DMmanure[k]
+      Animal_df$Pmin_frac[k] = Animal_df$Pmin_stored[k]/Animal_df$TotalNP_barn[k]
+      Animal_df$Porg_frac[k] = Animal_df$Porg_stored[k]/Animal_df$TotalNP_barn[k]
+      Animal_df$Norg_frac[k] = Animal_df$Norg_stored[k]/Animal_df$TotalNP_barn[k]
+      Animal_df$Nmin_frac[k] = Animal_df$Nmin_stored[k]/Animal_df$TotalNP_barn[k]
     }
   }
   #assign("mgt_datafram",mgt_datafram,envir=parent.frame())
   return(Animal_df)
 }
-
